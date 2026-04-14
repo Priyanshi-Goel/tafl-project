@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regular Expression Explorer</title>
+    <style>
+        /* --- CORE THEME (LIGHT MODE) --- */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: white;
+            --border-color: #ccc;
+            --primary-btn: #0056b3;
+            --primary-hover: #004494;
+            --string-bg: #e9ecef;
+            --error-bg: #fdf7f7;
+            --error-text: #d9534f;
+            --success-bg: #d4edda;
+            --success-text: #155724;
+            --sugg-btn-bg: #e2e8f0;
+            --sugg-btn-text: #0f172a;
+            --highlight-bg: #ffe066;
+            --highlight-text: #000;
+        }
+
+        /* --- DARK MODE THEME --- */
+        .dark-mode {
+            --bg-color: #0f172a;
+            --text-color: #e2e8f0;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --primary-btn: #3b82f6;
+            --primary-hover: #2563eb;
+            --string-bg: #334155;
+            --error-bg: #451a1a;
+            --error-text: #fca5a5;
+            --success-bg: #064e3b;
+            --success-text: #6ee7b7;
+            --sugg-btn-bg: #334155;
+            --sugg-btn-text: #38bdf8;
+            --highlight-bg: #b45309;
+            --highlight-text: #fff;
+        }
+
+        /* --- GLOBAL STYLES --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+        label { font-weight: bold; display: block; margin-top: 15px; }
+        input[type="text"], input[type="number"] {
+            width: 100%; padding: 10px; margin-top: 5px;
+            background-color: var(--bg-color); color: var(--text-color);
+            border: 1px solid var(--border-color); border-radius: 4px;
+            box-sizing: border-box; font-family: monospace; font-size: 16px;
+        }
+        button {
+            background-color: var(--primary-btn); color: white;
+            border: none; padding: 10px 20px; font-size: 16px;
+            border-radius: 4px; cursor: pointer; margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: var(--primary-hover); }
+        .theme-toggle {
+            background-color: transparent; color: var(--text-color);
+            border: 2px solid var(--border-color); padding: 5px 15px;
+            width: auto; margin-top: 0;
+        }
+        .theme-toggle:hover { background-color: var(--border-color); }
+
+        /* --- UI ELEMENTS --- */
+        .suggestion-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .suggestion-btn { background-color: var(--sugg-btn-bg); color: var(--sugg-btn-text); font-family: monospace; margin-top: 0; width: auto; }
+        .suggestion-btn:hover { background-color: var(--primary-btn); color: white; }
+        
+        .error { color: var(--error-text); background-color: var(--error-bg); padding: 10px; border-radius: 4px; display: none; }
+        .success { color: var(--success-text); background-color: var(--success-bg); padding: 10px; border-radius: 4px; }
+        
+        .string-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .string-item {
+            background: var(--string-bg); padding: 5px 10px; border-radius: 4px;
+            font-family: monospace; cursor: pointer; border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .string-item:hover { border-color: var(--primary-btn); }
+        
+        /* --- DEBUGGER STYLES --- */
+        .debugger-box {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        .highlight-match {
+            background-color: var(--highlight-bg);
+            color: var(--highlight-text);
+            border-radius: 3px;
+            padding: 2px;
+            font-weight: bold;
+        }
+        .status-badge {
+            font-size: 14px; padding: 3px 8px; border-radius: 12px; margin-left: 10px; vertical-align: middle; letter-spacing: normal;
+        }
+        .status-pass { background: var(--success-bg); color: var(--success-text); }
+        .status-fail { background: var(--error-bg); color: var(--error-text); }
+    </style>
+</head>
+<body>
+
+    <div class="header-row">
+        <h2>🔍 Regex Explorer & Tester</h2>
+        <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+    </div>
+
+    <div class="card">
+        <h3>1. Global Settings</h3>
+        <label>Alphabet (comma separated):</label>
+        <input type="text" id="alphabet" value="a,b">
+        <label>Max String Length:</label>
+        <input type="number" id="maxLength" value="4" min="1" max="8">
+    </div>
+
+    <div class="card">
+        <h3>2. Write Your Expressions</h3>
+        <label>Regular Expression A:</label>
+        <input type="text" id="regexA" value="(a|b)*abb" oninput="generateSuggestions()">
+        <div style="margin-top: 10px;">
+            <small style="color: gray;">💡 Equivalent Suggestions (Click to test):</small>
+            <div id="suggestionsList" class="suggestion-list"></div>
+        </div>
+
+        <label>Regular Expression B:</label>
+        <input type="text" id="regexB" value="a*b*abb">
+        
+        <button onclick="runTest()" style="width: 100%;">Generate & Test</button>
+    </div>
+
+    <div id="errorBox" class="error"></div>
+
+    <div id="debuggerCard" class="card" style="display: none; border-left: 5px solid var(--primary-btn);">
+        <h3>3. Visual String Debugger</h3>
+        <p style="font-size: 14px; margin-top: 0; color: gray;">
+            See exactly which parts of the string successfully match the pattern.
+        </p>
+        
+        <label>Target String to Debug:</label>
+        <input type="text" id="debugTarget" placeholder="Type a string or click one below..." oninput="runDebugger()">
+        
+        <label>Regex A Match View:</label>
+        <div id="debugRegexA" class="debugger-box">...</div>
+        
+        <label>Regex B Match View:</label>
+        <div id="debugRegexB" class="debugger-box">...</div>
+    </div>
+
+    <div id="resultsCard" class="card" style="display: none;">
+        <h3>Results (Click any string to debug)</h3>
+        
+        <h4>Strings matching Regex A:</h4>
+        <div id="matchesA" class="string-list"></div>
+
+        <h4>Equivalence Check:</h4>
+        <div id="equivalenceResult" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+        // --- THEME LOGIC ---
+        function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+
+        // --- SUGGESTION LOGIC ---
+        function generateSuggestions() {
+            let expr = document.getElementById('regexA').value;
+            let suggestions = new Set();
+            if (!expr) { document.getElementById('suggestionsList').innerHTML = ""; return; }
+
+            let swappedOr = expr.replace(/\(([^|()]+)\|([^|()]+)\)/g, '($2|$1)');
+            if (swappedOr !== expr) suggestions.add(swappedOr);
+            let plusToStar = expr.replace(/([a-zA-Z0-9])\+/g, '$1$1*');
+            if (plusToStar !== expr) suggestions.add(plusToStar);
+            let starDist = expr.replace(/\(([^|()]+)\|([^|()]+)\)\*/g, '($1*$2*)*');
+            if (starDist !== expr) suggestions.add(starDist);
+            suggestions.add(`(${expr})|(${expr})`);
+
+            let suggDiv = document.getElementById('suggestionsList');
+            suggDiv.innerHTML = "";
+            suggestions.forEach(s => {
+                let btn = document.createElement('button');
+                btn.className = 'suggestion-btn'; btn.innerText = s;
+                btn.onclick = () => { document.getElementById('regexB').value = s; runTest(); };
+                suggDiv.appendChild(btn);
+            });
+        }
+
+        // --- VISUAL DEBUGGER LOGIC ---
+        // This function finds the largest chunk of the string that matches the regex
+        function getLongestPartialMatch(regexStr, text) {
+            if (text === "") return { html: "<em>Empty String</em>", fullMatch: false };
+            
+            try {
+                let exactRegex = new RegExp(`^(${regexStr})$`);
+                let fullMatch = exactRegex.test(text);
+                
+                if (fullMatch) {
+                    return { 
+                        html: `<span class="highlight-match">${text}</span> <span class="status-badge status-pass">✅ Full Match</span>`, 
+                        fullMatch: true 
+                    };
+                }
+
+                // If no full match, find the longest internal match
+                let longestMatch = { text: "", start: 0, end: 0 };
+                for (let i = 0; i < text.length; i++) {
+                    for (let j = i + 1; j <= text.length; j++) {
+                        let sub = text.substring(i, j);
+                        if (exactRegex.test(sub) && sub.length > longestMatch.text.length) {
+                            longestMatch = { text: sub, start: i, end: j };
+                        }
+                    }
+                }
+
+                if (longestMatch.text.length > 0) {
+                    let html = text.substring(0, longestMatch.start) + 
+                           `<span class="highlight-match">${text.substring(longestMatch.start, longestMatch.end)}</span>` + 
+                           text.substring(longestMatch.end) + 
+                           ` <span class="status-badge status-fail">❌ Partial Match</span>`;
+                    return { html, fullMatch: false };
+                } else {
+                    return { html: `<span style="opacity:0.5">${text}</span> <span class="status-badge status-fail">❌ No Match</span>`, fullMatch: false };
+                }
+            } catch(e) { return { html: "Syntax Error", fullMatch: false }; }
+        }
+
+        function runDebugger(targetStr = null) {
+            let target = targetStr !== null ? targetStr : document.getElementById('debugTarget').value;
+            if (targetStr !== null) {
+                document.getElementById('debugTarget').value = target === "ε" ? "" : target;
+            }
+            
+            let realTarget = target === "ε" ? "" : document.getElementById('debugTarget').value;
+            let strRegexA = document.getElementById('regexA').value;
+            let strRegexB = document.getElementById('regexB').value;
+
+            document.getElementById('debuggerCard').style.display = 'block';
+            document.getElementById('debugRegexA').innerHTML = getLongestPartialMatch(strRegexA, realTarget).html;
+            document.getElementById('debugRegexB').innerHTML = getLongestPartialMatch(strRegexB, realTarget).html;
+        }
+
+        // --- STRING GENERATOR LOGIC ---
+        function generateAllStrings(alphabet, maxLength) {
+            let results = [];
+            function buildString(currentString) {
+                results.push(currentString); 
+                if (currentString.length < maxLength) {
+                    for (let char of alphabet) { buildString(currentString + char); }
+                }
+            }
+            buildString(""); 
+            return results;
+        }
+
+        function createStringItem(str) {
+            let span = document.createElement('span');
+            span.className = 'string-item';
+            span.innerText = str === "" ? "ε" : str;
+            span.title = "Click to open Visual Debugger";
+            // When clicked, run the debugger on this exact string
+            span.onclick = () => {
+                runDebugger(str);
+                // Scroll to debugger smoothly
+                document.getElementById('debuggerCard').scrollIntoView({ behavior: 'smooth' });
+            };
+            return span;
+        }
+
+        // --- MAIN TESTING LOGIC ---
+        function runTest() {
+            document.getElementById('errorBox').style.display = 'none';
+            document.getElementById('resultsCard').style.display = 'block';
+            
+            let alphabetInput = document.getElementById('alphabet').value;
+            let alphabet = alphabetInput.split(',').map(letter => letter.trim()).filter(letter => letter !== "");
+            let maxLength = parseInt(document.getElementById('maxLength').value);
+            let strRegexA = document.getElementById('regexA').value;
+            let strRegexB = document.getElementById('regexB').value;
+
+            try {
+                let regA = new RegExp(`^(${strRegexA})$`);
+                let regB = new RegExp(`^(${strRegexB})$`);
+                let allStrings = generateAllStrings(alphabet, maxLength);
+
+                let matchesA = allStrings.filter(s => regA.test(s));
+                let matchesB = allStrings.filter(s => regB.test(s));
+
+                let matchesADiv = document.getElementById('matchesA');
+                matchesADiv.innerHTML = ""; 
+                
+                if (matchesA.length === 0) {
+                    matchesADiv.innerHTML = "<em>No matches found up to this length.</em>";
+                } else {
+                    matchesA.forEach(str => matchesADiv.appendChild(createStringItem(str)));
+                }
+
+                let onlyInA = matchesA.filter(s => !matchesB.includes(s));
+                let onlyInB = matchesB.filter(s => !matchesA.includes(s));
+
+                let eqDiv = document.getElementById('equivalenceResult');
+                
+                if (onlyInA.length === 0 && onlyInB.length === 0) {
+                    eqDiv.innerHTML = `<div class="success">✅ <b>Equivalent!</b> Both generated the exact same strings up to length ${maxLength}.</div>`;
+                } else {
+                    let failHTML = `<div class="error" style="display:block;">❌ <b>Not Equivalent!</b> Counter-examples found:<ul>`;
+                    
+                    if (onlyInA.length > 0) {
+                        failHTML += `<li><b>Matches A but NOT B:</b> `;
+                        failHTML += `<div class="string-list">`;
+                        onlyInA.forEach(s => {
+                            let itemHTML = s === "" ? "ε" : s;
+                            failHTML += `<span class="string-item" title="Click to Debug" onclick="runDebugger('${s}'); document.getElementById('debuggerCard').scrollIntoView({ behavior: 'smooth' });">${itemHTML}</span>`;
+                        });
+                        failHTML += `</div></li>`;
+                    }
+                    if (onlyInB.length > 0) {
+                        failHTML += `<li style="margin-top: 10px;"><b>Matches B but NOT A:</b> `;
+                        failHTML += `<div class="string-list">`;
+                        onlyInB.forEach(s => {
+                            let itemHTML = s === "" ? "ε" : s;
+                            failHTML += `<span class="string-item" title="Click to Debug" onclick="runDebugger('${s}'); document.getElementById('debuggerCard').scrollIntoView({ behavior: 'smooth' });">${itemHTML}</span>`;
+                        });
+                        failHTML += `</div></li>`;
+                    }
+                    failHTML += `</ul></div>`;
+                    eqDiv.innerHTML = failHTML;
+                }
+            } catch (error) {
+                let errorBox = document.getElementById('errorBox');
+                errorBox.innerHTML = `<b>Syntax Error:</b> ${error.message}`;
+                errorBox.style.display = 'block';
+                document.getElementById('resultsCard').style.display = 'none';
+            }
+        }
+
+        window.onload = generateSuggestions;
+    </script>
+</body>
+</html>
