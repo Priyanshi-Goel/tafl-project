@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Regular Expression Explorer</title>
     <style>
-        /* --- CORE THEME (LIGHT MODE) --- */
+        
         :root {
             --bg-color: #f4f7f6;
             --text-color: #333;
@@ -24,7 +24,7 @@
             --highlight-text: #000;
         }
 
-        /* --- DARK MODE THEME --- */
+       
         .dark-mode {
             --bg-color: #0f172a;
             --text-color: #e2e8f0;
@@ -43,7 +43,7 @@
             --highlight-text: #fff;
         }
 
-        /* --- GLOBAL STYLES --- */
+      
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
@@ -87,7 +87,7 @@
         }
         .theme-toggle:hover { background-color: var(--border-color); }
 
-        /* --- UI ELEMENTS --- */
+       
         .suggestion-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
         .suggestion-btn { background-color: var(--sugg-btn-bg); color: var(--sugg-btn-text); font-family: monospace; margin-top: 0; width: auto; }
         .suggestion-btn:hover { background-color: var(--primary-btn); color: white; }
@@ -103,7 +103,7 @@
         }
         .string-item:hover { border-color: var(--primary-btn); }
         
-        /* --- DEBUGGER STYLES --- */
+        
         .debugger-box {
             background: var(--bg-color);
             border: 1px solid var(--border-color);
@@ -214,8 +214,7 @@
             });
         }
 
-        // --- VISUAL DEBUGGER LOGIC ---
-        // This function finds the largest chunk of the string that matches the regex
+        
         function getLongestPartialMatch(regexStr, text) {
             if (text === "") return { html: "<em>Empty String</em>", fullMatch: false };
             
@@ -268,7 +267,7 @@
             document.getElementById('debugRegexB').innerHTML = getLongestPartialMatch(strRegexB, realTarget).html;
         }
 
-        // --- STRING GENERATOR LOGIC ---
+     
         function generateAllStrings(alphabet, maxLength) {
             let results = [];
             function buildString(currentString) {
@@ -295,7 +294,7 @@
             return span;
         }
 
-        // --- MAIN TESTING LOGIC ---
+       
         function runTest() {
             document.getElementById('errorBox').style.display = 'none';
             document.getElementById('resultsCard').style.display = 'block';
